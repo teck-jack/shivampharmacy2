@@ -1,7 +1,8 @@
+// Updated ProductCard component
 "use client"
 
 import React from "react"
-import { Star, ShoppingCart, Heart } from "lucide-react"
+import { Star, ShoppingCart, Heart, ExternalLink } from "lucide-react"
 import type { Product } from "../types/product"
 import { useCart } from "../context/CartContext"
 import { Link } from "react-router-dom"
@@ -11,7 +12,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { id, name, image, price, rating, category, description, waight, isNew, discount } = product
+  const { id, name, image, price, rating, category, description, waight, isNew, discount, purchaseLinks } = product
   const { addToCart, openCart } = useCart()
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -22,11 +23,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <Link
-      to={`/`}
+      to={`product/${id}`}
       className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full"
     >
-      {/* Product Image Container */}
-      <div className="relative overflow-hidden h-64">
+      {/* Product Image Container - Fixed height removed and replaced with aspect ratio */}
+      <div className="relative overflow-hidden aspect-[4/4]">
         <img
           src={image || "/placeholder.svg"}
           alt={name}
@@ -92,6 +93,35 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </span>
         </div>
 
+        {/* Purchase Links - Added this new section */}
+        {purchaseLinks && (
+          <div className="mb-3 flex gap-2">
+            {purchaseLinks.amazon && (
+              <a 
+                href={purchaseLinks.amazon} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs bg-yellow-400 hover:bg-yellow-500 text-black px-2 py-1 rounded flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span>Amazon</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+            {purchaseLinks.meesho && (
+              <a 
+                href={purchaseLinks.meesho} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs bg-pink-500 hover:bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span>Meesho</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Price and Add to Cart */}
         <div className="flex items-center justify-between mt-1">

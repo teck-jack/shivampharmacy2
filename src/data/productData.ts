@@ -15,6 +15,11 @@ export const products: Product[] = [
     waight:"225 gm",
     isNew: false,
     discount: 5,
+    purchaseLinks: {
+      amazon: "https://www.amazon.com/Hajma-Churna/dp/...",
+      meesho: "https://www.meesho.com/Hajma-Churna/p..."
+    }
+
   },
   {
     id: 2,
@@ -29,6 +34,10 @@ export const products: Product[] = [
     waight:"250 gm",
     isNew: false,
     discount: 7,
+    purchaseLinks: {
+      amazon: "https://www.amazon.com/Hajma-Churna/dp/...",
+      meesho: "https://www.meesho.com/Hajma-Churna/p..."
+    }
   },
   {
     id: 3,
@@ -42,6 +51,10 @@ export const products: Product[] = [
     waight:"200 gm",
     isNew: true,
     discount: 5,
+    purchaseLinks: {
+      amazon: "https://www.amazon.com/Hajma-Churna/dp/...",
+      meesho: "https://www.meesho.com/Hajma-Churna/p..."
+    }
   },
   
   {
@@ -56,6 +69,10 @@ export const products: Product[] = [
     waight:"225 gm",
     isNew: false,
     discount: 5,
+    purchaseLinks: {
+      amazon: "https://www.amazon.com/Hajma-Churna/dp/...",
+      meesho: "https://www.meesho.com/Hajma-Churna/p..."
+    }
   },
   {
     id: 5,
@@ -70,6 +87,10 @@ export const products: Product[] = [
     waight:"225 gm",
     isNew: false,
     discount: 5,
+    purchaseLinks: {
+      amazon: "https://www.amazon.com/Hajma-Churna/dp/...",
+      meesho: "https://www.meesho.com/Hajma-Churna/p..."
+    }
   },
   {
     id: 6,
@@ -83,5 +104,9 @@ export const products: Product[] = [
     waight:"250 gm",
     isNew: true,
     discount: 5,
+    purchaseLinks: {
+      amazon: "https://www.amazon.com/Hajma-Churna/dp/...",
+      meesho: "https://www.meesho.com/Hajma-Churna/p..."
+    }
   },
 ]

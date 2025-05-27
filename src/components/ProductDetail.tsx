@@ -1,17 +1,27 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { ShoppingCart, Heart, ArrowLeft, Star, Check } from "lucide-react";
+import { ShoppingCart, Heart, ArrowLeft, Star, Check, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import CartDrawer from "../components/CartDrawer";
+import { products } from "../data/productData"; // Import your products data
+import { useNavigate } from "react-router-dom";
 
-const ProductDetail = ({ product }) => {
+
+const ProductDetail = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const navigate = useNavigate();
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // If product isn't passed through props, show loading state
+
+
+  // Find the product by id
+  const product = products.find(p => p.id === Number(id));
+
+  // If product isn't found, show loading state
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-16">
@@ -32,12 +42,8 @@ const ProductDetail = ({ product }) => {
     );
   }
 
-  // Calculate discounted price if there's a discount
-  const discountedPrice = product.discount > 0 
-    ? product.price * (1 - product.discount / 100) 
-    : product.price;
+  // Calculate discounted price
 
-  // Handle quantity change
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
     if (!isNaN(value) && value > 0) {
@@ -45,16 +51,27 @@ const ProductDetail = ({ product }) => {
     }
   };
 
-  // Handle add to cart
   const handleAddToCart = () => {
     addToCart(product, quantity);
+    setShowSuccess(true);
+    setTimeout(() => {
+      navigate("/checkout");
+    }, 1500);
   };
 
-  // Create an array of product images (assuming product has multiple images)
-  // If not, use the main image multiple times for the gallery
-  const productImages = product.images 
-    ? product.images 
-    : Array(4).fill(product.image || "/placeholder.svg");
+  // Add this somewhere in your return JSX:
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    showSuccess && (
+      <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50">
+        Item added to cart! Redirecting to checkout...
+      </div>
+    )
+  }
+
+  // Create an array with the main image (since your data has single image)
+  const productImages = [product.image || "/placeholder.svg"];
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -73,29 +90,39 @@ const ProductDetail = ({ product }) => {
             <div className="space-y-4">
               <div className="aspect-square overflow-hidden rounded-lg">
                 <img
-                  src={productImages[activeImage] || "/placeholder.svg"}
+                  src={`/${product.image?.split('?')[0] ?? "placeholder.svg"}`}
                   alt={product.name}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    if (!img.dataset.fallback) {
+                      img.src = "/placeholder.svg";
+                      img.dataset.fallback = "true"; // prevents looping
+                    }
+                  }}
                 />
+
               </div>
-              
-              {/* Thumbnail Gallery */}
-              <div className="grid grid-cols-4 gap-2">
-                {productImages.slice(0, 4).map((image, index) => (
-                  <div 
-                    key={index}
-                    className={`aspect-square rounded-md overflow-hidden cursor-pointer border-2 
-                      ${activeImage === index ? 'border-primary-600' : 'border-transparent'}`}
-                    onClick={() => setActiveImage(index)}
-                  >
-                    <img 
-                      src={image || "/placeholder.svg"} 
-                      alt={`${product.name} view ${index + 1}`} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
+
+              {/* Thumbnail Gallery - Only show if multiple images exist */}
+              {productImages.length > 1 && (
+                <div className="grid grid-cols-4 gap-2">
+                  {productImages.slice(0, 4).map((image, index) => (
+                    <div
+                      key={index}
+                      className={`aspect-square rounded-md overflow-hidden cursor-pointer border-2 
+                        ${activeImage === index ? 'border-primary-600' : 'border-transparent'}`}
+                      onClick={() => setActiveImage(index)}
+                    >
+                      <img
+                        src={image}
+                        alt={`${product.name} view ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Product Info */}
@@ -105,38 +132,37 @@ const ProductDetail = ({ product }) => {
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                     {product.category}
                   </span>
-                  {product.inStock && (
-                    <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center">
-                      <Check className="h-3 w-3 mr-1" />
-                      In Stock
-                    </span>
-                  )}
+                  <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center">
+                    <Check className="h-3 w-3 mr-1" />
+                    In Stock
+                  </span>
                 </div>
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mt-2">{product.name}</h1>
-                
+
                 {/* Rating */}
                 <div className="flex items-center mt-2">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.floor(product.rating || 0)
-                          ? "text-yellow-400 fill-yellow-400"
-                          : "text-gray-300"
-                      }`}
+                      className={`h-4 w-4 ${i < Math.floor(product.rating || 0)
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-300"
+                        }`}
                     />
                   ))}
                   <span className="ml-2 text-sm text-gray-500">
-                    {product.reviews ? `(${product.reviews} reviews)` : "(No reviews yet)"}
+                    ({(Math.floor(Math.random() * 100) + 10)} reviews)
                   </span>
                 </div>
               </div>
 
               {/* Price */}
               <div className="flex items-baseline">
-                <span className="text-2xl font-bold text-gray-900">₹{discountedPrice.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-gray-900">₹{product.price}</span>
                 {product.discount > 0 && (
-                  <span className="ml-2 text-gray-500 line-through">₹{product.price.toFixed(2)}</span>
+                  <span className="ml-2 text-gray-500 line-through">
+                    ₹{Math.round(product.price / (1 - product.discount / 100))}
+                  </span>
                 )}
                 {product.discount > 0 && (
                   <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">
@@ -145,21 +171,47 @@ const ProductDetail = ({ product }) => {
                 )}
               </div>
 
+              {/* Weight */}
+              <div className="flex items-center">
+                <span className="inline-block bg-gray-100 text-gray-800 text-xs font-semibold px-3 py-1 rounded-full">
+                  Weight: {product.waight}
+                </span>
+              </div>
+
               {/* Description */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Description</h3>
-                <p className="text-gray-600">{product.description || "No description available."}</p>
+                <p className="text-gray-600">{product.description}</p>
               </div>
 
-              {/* Features */}
-              {product.features && product.features.length > 0 && (
+              {/* Purchase Links */}
+              {product.purchaseLinks && (
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Features</h3>
-                  <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                    {product.features.map((feature, index) => (
-                      <li key={index}>{feature}</li>
-                    ))}
-                  </ul>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Buy from</h3>
+                  <div className="flex gap-2">
+                    {product.purchaseLinks.amazon && (
+                      <a
+                        href={product.purchaseLinks.amazon}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm bg-yellow-400 hover:bg-yellow-500 text-black px-3 py-2 rounded flex items-center gap-1"
+                      >
+                        <span>Amazon</span>
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                    {product.purchaseLinks.meesho && (
+                      <a
+                        href={product.purchaseLinks.meesho}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm bg-pink-500 hover:bg-pink-600 text-white px-3 py-2 rounded flex items-center gap-1"
+                      >
+                        <span>Meesho</span>
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -196,28 +248,6 @@ const ProductDetail = ({ product }) => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Additional Info (Specifications, Reviews, etc.) */}
-          <div className="border-t border-gray-200 p-6">
-            <div className="max-w-3xl mx-auto">
-              {/* Specifications */}
-              {product.specifications && Object.keys(product.specifications).length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-xl font-medium text-gray-900 mb-4">Specifications</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(product.specifications).map(([key, value]) => (
-                      <div key={key} className="flex">
-                        <span className="font-medium text-gray-900 w-1/3">{key}</span>
-                        <span className="text-gray-600 w-2/3">{value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* More product details can be added here */}
             </div>
           </div>
         </div>

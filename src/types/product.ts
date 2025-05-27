@@ -9,4 +9,8 @@ export interface Product {
   rating: number
   isNew: boolean
   discount: number
+   purchaseLinks?: {
+    amazon?: string
+    meesho?: string
+  }
 }

@@ -6,11 +6,16 @@ import { Link, useNavigate } from "react-router-dom"
 import { useCart } from "../context/CartContext"
 import { useAuth } from "../context/AuthContext"
 import React from "react"
+import { products } from "../data/productData" // Import your products data
+import { Product } from "../types/product"
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<Product[]>([])
+  const [showSearchResults, setShowSearchResults] = useState(false)
   const { getCartCount, toggleCart } = useCart()
   const { user, isAuthenticated, logout } = useAuth()
   const navigate = useNavigate()
@@ -30,6 +35,40 @@ const Header = () => {
     logout()
     setIsProfileOpen(false)
     navigate("/")
+  }
+
+  // Search functionality
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    if (query.trim() === "") {
+      setSearchResults([])
+      setShowSearchResults(false)
+      return
+    }
+
+    const results = products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(query.toLowerCase()) ||
+        product.description.toLowerCase().includes(query.toLowerCase()) ||
+        product.category.toLowerCase().includes(query.toLowerCase())
+    )
+    setSearchResults(results)
+    setShowSearchResults(results.length > 0)
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`)
+      setSearchQuery("")
+      setShowSearchResults(false)
+    }
+  }
+
+  const handleResultClick = (productId: number) => {
+    navigate(`/product/${productId}`)
+    setSearchQuery("")
+    setShowSearchResults(false)
   }
 
   return (
@@ -64,9 +103,41 @@ const Header = () => {
 
           {/* Desktop Icons */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="text-primary-700 hover:text-primary-500 transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
+            {/* Search Bar */}
+            <div className="relative">
+              <form onSubmit={handleSearchSubmit} className="flex items-center">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="border border-gray-300 rounded-l-md px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  onFocus={() => searchQuery && setShowSearchResults(true)}
+                />
+                <button
+                  type="submit"
+                  className="bg-primary-600 text-white rounded-r-md px-3 py-1 hover:bg-primary-700 transition-colors"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              </form>
+
+              {/* Search Results Dropdown */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+                  {searchResults.map((product) => (
+                    <div
+                      key={product.id}
+                      className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      onClick={() => handleResultClick(product.id)}
+                    >
+                      <div className="font-medium text-primary-700">{product.name}</div>
+                      <div className="text-xs text-gray-500 truncate">{product.description}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* User Profile */}
             <div className="relative">
@@ -150,6 +221,44 @@ const Header = () => {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 py-4 animate-fade-in">
+            <div className="relative mb-4">
+              <form onSubmit={handleSearchSubmit} className="flex">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  onFocus={() => searchQuery && setShowSearchResults(true)}
+                />
+                <button
+                  type="submit"
+                  className="bg-primary-600 text-white rounded-r-md px-3 py-2 hover:bg-primary-700 transition-colors"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              </form>
+
+              {/* Mobile Search Results */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
+                  {searchResults.map((product) => (
+                    <div
+                      key={product.id}
+                      className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      onClick={() => {
+                        handleResultClick(product.id)
+                        setIsMenuOpen(false)
+                      }}
+                    >
+                      <div className="font-medium text-primary-700">{product.name}</div>
+                      <div className="text-xs text-gray-500 truncate">{product.description}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <nav className="flex flex-col space-y-4">
               <Link
                 to="/"
@@ -226,9 +335,6 @@ const Header = () => {
               )}
             </nav>
             <div className="flex justify-between mt-4 pt-4 border-t border-primary-100">
-              <button className="p-2 text-primary-700 hover:bg-primary-50 rounded-full transition-colors">
-                <Search className="h-5 w-5" />
-              </button>
               <button
                 className="p-2 text-primary-700 hover:bg-primary-50 rounded-full transition-colors relative"
                 onClick={() => {

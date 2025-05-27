@@ -17,6 +17,7 @@ import { CartProvider } from "./context/CartContext"
 import { OrderProvider } from "./context/OrderContext"
 import ProtectedRoute from "./components/ProtectedRoute"
 import ProductDetail from "./components/ProductDetail"
+import About from './components/About'
 
 function App() {
   return (
@@ -65,6 +66,8 @@ function App() {
                   />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/About" element={<About />} />
+                  
                   <Route
                     path="/profile"
                     element={
