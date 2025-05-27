@@ -1,0 +1,82 @@
+# ===================
+# Node.js dependencies
+# ===================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===================
+# Environment variables
+# ===================
+.env
+.env.local
+.env.*.local
+
+# ===================
+# Logs
+# ===================
+logs
+*.log
+*.log.*
+log.txt
+
+# ===================
+# OS Generated Files
+# ===================
+.DS_Store
+Thumbs.db
+
+# ===================
+# IDEs and Editors
+# ===================
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# ===================
+# Build output
+# ===================
+dist/
+build/
+coverage/
+.next/
+out/
+.cache/
+tmp/
+temp/
+
+# ===================
+# Test output
+# ===================
+jest-html-reporters-*
+
+# ===================
+# Optional npm cache directory
+# ===================
+.npm/
+
+# ===================
+# Local environment settings
+# ===================
+*.local
+
+# ===================
+# TypeScript
+# ===================
+*.tsbuildinfo
+
+# ===================
+# Misc
+# ===================
+*.tgz
+*.bak
+*.swp
+
+# ===================
+# Git
+# ===================
+.git/
+.gitignore
